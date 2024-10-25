@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Super Tic-Tac-Toe</h1>
+    <div id="current-player">Current player: <span id="player-symbol"></span></div>
+    <div id="main-grid" class="main-grid">
+        <!-- 9 big boxes (3x3 grid), each containing a mini-grid (3x3 cells) -->
+        <div class="big-box" data-big="0">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="1">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="2">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="3">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="4">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="5">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="6">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="7">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+        <div class="big-box" data-big="8">
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
+        </div>
+    </div>
+    <button id="reset-button">Reset</button>
+
+    <script src="script.js"></script>
+</body>
+</html>
