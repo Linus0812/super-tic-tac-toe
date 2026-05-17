@@ -1,66 +1,965 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Tic-Tac-Toe</title>
-    <link rel="stylesheet" href="style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6433042621097304"
      crossorigin="anonymous"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Tic-Tac-Toe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --x: #f87060;
+    --o: #60c8f8;
+    --active-glow: rgba(255,255,255,0.06);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --font: 'Syne', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; transform: scale(0.97); }
+
+  /* ─── MENU CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 340px;
+    position: relative;
+  }
+
+  .game-logo {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-family: var(--mono);
+  }
+  .game-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 32px;
+  }
+  .game-title span { color: var(--x); }
+
+  .btn {
+    display: block; width: 100%;
+    padding: 14px 20px;
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    text-align: left;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .btn:hover { background: #22222e; border-color: var(--border2); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn .icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .btn.pvp .icon { background: rgba(248,112,96,0.15); color: var(--x); }
+  .btn.ai .icon { background: rgba(96,200,248,0.15); color: var(--o); }
+  .btn.back { background: transparent; border-color: var(--border); color: var(--muted); font-weight: 400; font-size: 0.9rem; margin-top: 6px; }
+  .btn.back:hover { color: var(--text); }
+  .btn.back .icon { background: none; font-size: 16px; }
+
+  .difficulty-label {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); font-family: var(--mono); margin: 20px 0 10px;
+  }
+
+  .diff-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .diff-btn {
+    padding: 12px 8px; border: 1px solid var(--border2); border-radius: 10px;
+    background: var(--surface2); color: var(--muted);
+    font-family: var(--font); font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .diff-btn:hover { border-color: rgba(96,200,248,0.5); color: var(--o); }
+  .diff-btn.easy:hover, .diff-btn.easy.sel { border-color: #60c868; color: #60c868; background: rgba(96,200,104,0.08); }
+  .diff-btn.medium:hover, .diff-btn.medium.sel { border-color: #f8c060; color: #f8c060; background: rgba(248,192,96,0.08); }
+  .diff-btn.hard:hover, .diff-btn.hard.sel { border-color: var(--x); color: var(--x); background: rgba(248,112,96,0.08); }
+  .diff-btn.sel { font-weight: 800; }
+
+  .start-ai-btn {
+    display: block; width: 100%; padding: 14px;
+    border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #1a3a4a 0%, #1a2a4a 100%);
+    border: 1px solid rgba(96,200,248,0.3);
+    color: var(--o); font-family: var(--font);
+    font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .start-ai-btn:hover { background: linear-gradient(135deg, #1e4050 0%, #1e3050 100%); transform: translateY(-1px); }
+
+  /* ─── GAME SCREEN ─── */
+  #game-screen {
+    position: relative; min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 20px;
+  }
+
+  #game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; max-width: 640px;
+    margin-bottom: 20px;
+  }
+
+  .header-back {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 14px;
+    color: var(--muted); font-family: var(--font); font-size: 0.85rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .header-back:hover { color: var(--text); border-color: var(--border2); }
+
+  #status-bar {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .player-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 0.9rem; font-weight: 700; transition: all 0.2s;
+  }
+  .player-badge.active-x { border-color: rgba(248,112,96,0.4); background: rgba(248,112,96,0.08); }
+  .player-badge.active-o { border-color: rgba(96,200,248,0.4); background: rgba(96,200,248,0.08); }
+  .sym { display: flex; align-items: center; }
+  .win-symbol.x, .win-symbol.o { color: inherit; }
+  .turn-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .turn-dot.x { background: var(--x); }
+  .turn-dot.o { background: var(--o); }
+
+  .header-reset {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 14px;
+    color: var(--muted); font-family: var(--font); font-size: 0.85rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .header-reset:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ─── MAIN GRID ─── */
+  :root {
+    --gap: clamp(6px, 1.5vw, 14px);
+    --box: min(
+      calc((100vw - var(--gap) * 2 - 32px) / 3),
+      calc((100vh - 210px - var(--gap) * 2) / 3),
+      260px
+    );
+  }
+
+  #main-grid {
+    display: grid;
+    grid-template-columns: repeat(3, var(--box));
+    grid-template-rows: repeat(3, var(--box));
+    gap: var(--gap);
+  }
+
+  .big-box {
+    width: var(--box); height: var(--box);
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+    border-radius: clamp(8px, 2vw, 14px);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    padding: clamp(3px, 0.8vw, 6px); gap: clamp(2px, 0.6vw, 4px);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+  .big-box.active {
+    border-color: rgba(255,255,255,0.45);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.07), 0 0 24px rgba(255,255,255,0.06);
+    background: #181824;
+  }
+  .big-box.won-X { border-color: rgba(248,112,96,0.6); background: rgba(248,112,96,0.1); }
+  .big-box.won-O { border-color: rgba(96,200,248,0.6); background: rgba(96,200,248,0.1); }
+  .big-box.drawn { opacity: 0.45; }
+
+  /* Big winner overlay */
+  .big-box { position: relative; overflow: hidden; }
+  .big-box .win-overlay {
+    display: none; position: absolute; inset: 0;
+    border-radius: clamp(6px, 1.5vw, 10px);
+    align-items: center; justify-content: center;
+    pointer-events: none; overflow: hidden;
+  }
+  .big-box .win-overlay svg { width: 82%; height: 82%; }
+  .big-box.won-X .win-overlay,
+  .big-box.won-O .win-overlay,
+  .big-box.drawn .win-overlay { display: flex; }
+  .big-box.drawn .win-overlay { color: var(--muted); font-size: calc(var(--box) * 0.4); letter-spacing: 0; font-family: var(--mono); font-weight: 700; }
+
+  .mini-box {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: clamp(4px, 1vw, 7px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-family: var(--mono); font-size: clamp(0.6rem, 2vw, 1.05rem); font-weight: 500;
+    cursor: pointer; transition: background 0.12s, border-color 0.12s;
+    overflow: hidden;
+  }
+  .mini-box svg { display: block; flex-shrink: 0; }
+  .mini-box:hover:not(.filled) { background: #1e1e2e; border-color: var(--border2); }
+  .mini-box.filled { cursor: default; }
+  .mini-box.x { color: var(--x); }
+  .mini-box.o { color: var(--o); }
+
+  /* ─── RULES MODAL ─── */
+  #rules-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,10,15,0.88);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  #rules-overlay.show { opacity: 1; pointer-events: all; }
+  .rules-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 36px 32px; width: min(400px, 92vw);
+    transform: scale(0.93); transition: transform 0.25s;
+    max-height: 90vh; overflow-y: auto;
+  }
+  #rules-overlay.show .rules-card { transform: scale(1); }
+  .rules-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; }
+  .rule-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .rule-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 0.75rem; color: var(--muted);
+    margin-top: 1px;
+  }
+  .rule-text { font-size: 0.9rem; line-height: 1.6; color: var(--text); }
+  .rule-text strong { color: var(--x); font-weight: 700; }
+  .rule-text em { color: var(--o); font-style: normal; font-weight: 700; }
+  .rules-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .rules-close-btn {
+    display: block; width: 100%; padding: 13px;
+    border: 1px solid var(--border2); border-radius: 12px;
+    background: var(--surface2); color: var(--text);
+    font-family: var(--font); font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; margin-top: 4px;
+  }
+  .rules-close-btn:hover { background: #22222e; transform: translateY(-1px); }
+
+  /* ─── MOBILE header tweaks ─── */
+  @media (max-width: 560px) {
+    #game-header { gap: 6px; }
+    .header-back, .header-reset { padding: 7px 10px; font-size: 0.78rem; }
+    .player-badge { padding: 6px 10px; font-size: 0.78rem; gap: 5px; }
+    #status-bar { gap: 8px; }
+    #score-bar { gap: 12px; }
+    .card { width: min(340px, 92vw); padding: 32px 24px; }
+  }
+
+  /* ─── WIN OVERLAY ─── */
+  #win-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,10,15,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #win-overlay.show { opacity: 1; pointer-events: all; }
+
+  .win-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 40px 36px;
+    text-align: center;
+    width: 300px;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+  }
+  #win-overlay.show .win-card { transform: scale(1); }
+
+  .win-symbol {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; height: 80px;
+  }
+  .win-symbol.x { color: var(--x); }
+  .win-symbol.o { color: var(--o); }
+  .win-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+  .win-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+  .win-btn {
+    display: block; width: 100%; padding: 14px;
+    border: 1px solid var(--border2); border-radius: 12px;
+    background: var(--surface2); color: var(--text);
+    font-family: var(--font); font-size: 1rem; font-weight: 700;
+    cursor: pointer; margin-bottom: 10px; transition: all 0.15s;
+  }
+  .win-btn:hover { background: #22222e; transform: translateY(-1px); }
+  .win-btn.primary {
+    background: var(--surface2);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  /* ─── AI thinking ─── */
+  #ai-thinking {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    letter-spacing: 2px; height: 20px; margin-top: 12px;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  #ai-thinking.show { opacity: 1; }
+
+  /* ─── SCORE BAR ─── */
+  #score-bar {
+    display: flex; gap: 16px; margin-bottom: 16px;
+    font-family: var(--mono); font-size: 0.75rem;
+  }
+  .score-item { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .score-num { font-size: 1rem; font-weight: 500; }
+  .score-num.x { color: var(--x); }
+  .score-num.o { color: var(--o); }
+  .score-num.tie { color: var(--muted); }
+</style>
 </head>
 <body>
-    <h1>Super Tic-Tac-Toe</h1>
-    <div id="current-player">Current player: <span id="player-symbol"></span></div>
-    <div id="main-grid" class="main-grid">
-        <!-- 9 big boxes (3x3 grid), each containing a mini-grid (3x3 cells) -->
-        <div class="big-box" data-big="0">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="1">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="2">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="3">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="4">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="5">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="6">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="7">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-        <div class="big-box" data-big="8">
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-            <div class="mini-box"></div><div class="mini-box"></div><div class="mini-box"></div>
-        </div>
-    </div>
-    <button id="reset-button">Reset</button>
 
-    <script src="script.js"></script>
+<!-- ─── HOME SCREEN ─── -->
+<div class="screen" id="home-screen">
+  <div class="card">
+    <div class="game-logo">Strategy Game</div>
+    <h1 class="game-title">Super<br><span>Tic-Tac-Toe</span></h1>
+    <button class="btn pvp" id="pvp-btn">
+      <span class="icon">⚔</span>
+      <span>Play vs Player</span>
+    </button>
+    <button class="btn ai" id="ai-btn">
+      <span class="icon">◎</span>
+      <span>Play vs Computer</span>
+    </button>
+    <button class="btn back" id="rules-btn" style="margin-top:4px;">
+      <span class="icon">?</span>
+      <span>How to Play</span>
+    </button>
+  </div>
+</div>
+
+<!-- ─── RULES MODAL ─── -->
+<div id="rules-overlay">
+  <div class="rules-card">
+    <div class="rules-title">How to Play</div>
+    <div class="rule-item">
+      <div class="rule-num">1</div>
+      <div class="rule-text">The board is a <strong>3×3 grid of mini boards</strong>. Win three mini boards in a row to win the game.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">2</div>
+      <div class="rule-text">Your move inside a mini board <strong>determines which mini board your opponent must play in next</strong> — the cell you pick maps to the corresponding board position.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">3</div>
+      <div class="rule-text">The <strong>highlighted boards</strong> show where you're allowed to play this turn. If you're sent to an already-won board, you may play anywhere.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">4</div>
+      <div class="rule-text">Win a mini board by getting <strong>three in a row</strong> — just like normal tic-tac-toe. A drawn mini board is locked and can't be won.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">5</div>
+      <div class="rule-text">The first player to claim <em>three mini boards in a row</em> wins. Think ahead — every move shapes the battle!</div>
+    </div>
+    <hr class="rules-divider">
+    <button class="rules-close-btn" id="rules-close-btn">Got it →</button>
+  </div>
+</div>
+
+<!-- ─── AI DIFFICULTY SCREEN ─── -->
+<div class="screen hidden" id="diff-screen">
+  <div class="card">
+    <div class="game-logo">Computer Opponent</div>
+    <h1 class="game-title">Choose<br><span>Difficulty</span></h1>
+    <div class="difficulty-label">Level</div>
+    <div class="diff-grid">
+      <button class="diff-btn easy sel" data-level="easy">Easy</button>
+      <button class="diff-btn medium" data-level="medium">Medium</button>
+      <button class="diff-btn hard" data-level="hard">Hard</button>
+    </div>
+    <button class="start-ai-btn" id="start-ai-btn">Start Game →</button>
+    <button class="btn back" id="diff-back-btn">
+      <span class="icon">←</span>
+      <span>Back to menu</span>
+    </button>
+  </div>
+</div>
+
+<!-- ─── GAME SCREEN ─── -->
+<div id="game-screen">
+  <div id="game-header">
+    <button class="header-back" id="game-back-btn">← Menu</button>
+    <div id="status-bar">
+      <div class="player-badge active-x" id="badge-x">
+        <div class="turn-dot x" id="dot-x"></div>
+        <span class="sym x" id="sym-x"></span>
+        <span id="label-x">Player X</span>
+      </div>
+      <div class="player-badge" id="badge-o">
+        <div class="turn-dot o" id="dot-o"></div>
+        <span class="sym o" id="sym-o"></span>
+        <span id="label-o">Player O</span>
+      </div>
+    </div>
+    <button class="header-reset" id="header-reset-btn">↺ Reset</button>
+  </div>
+
+  <div id="score-bar">
+    <div class="score-item" id="score-item-x"><span class="score-num x" id="score-x">0</span></div>
+    <div class="score-item"><span class="score-num tie" id="score-tie">0</span> <span style="color:var(--muted)">tie</span></div>
+    <div class="score-item" id="score-item-o"><span class="score-num o" id="score-o">0</span></div>
+  </div>
+
+  <div id="main-grid"></div>
+  <div id="ai-thinking">THINKING…</div>
+</div>
+
+<!-- ─── WIN OVERLAY ─── -->
+<div id="win-overlay">
+  <div class="win-card">
+    <div class="win-symbol" id="win-symbol"></div>
+    <div class="win-title" id="win-title"></div>
+    <div class="win-sub" id="win-sub"></div>
+    <button class="win-btn primary" id="win-rematch-btn">↺ Play Again</button>
+    <button class="win-btn" id="win-menu-btn">← Main Menu</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let mode = 'pvp';
+let aiLevel = 'easy';
+let currentPlayer = 'X';
+let nextBig = null;
+let miniGrids, bigWinners, gameActive;
+let scores = { X: 0, O: 0, T: 0 };
+
+/* ═══════════════════════════════════════
+   BUILD GRID
+═══════════════════════════════════════ */
+function buildGrid() {
+  const mg = document.getElementById('main-grid');
+  mg.innerHTML = '';
+  for (let b = 0; b < 9; b++) {
+    const box = document.createElement('div');
+    box.className = 'big-box';
+    box.dataset.big = b;
+    const overlay = document.createElement('div');
+    overlay.className = 'win-overlay';
+    box.appendChild(overlay);
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'mini-box';
+      cell.dataset.big = b;
+      cell.dataset.idx = i;
+      cell.addEventListener('click', onCellClick);
+      box.appendChild(cell);
+    }
+    mg.appendChild(box);
+  }
+}
+
+/* ═══════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════ */
+function showScreen(id) {
+  ['home-screen','diff-screen'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+  document.getElementById('game-screen').style.display = id === 'game' ? 'flex' : 'none';
+}
+
+document.getElementById('pvp-btn').onclick = () => {
+  mode = 'pvp'; startGame();
+};
+document.getElementById('ai-btn').onclick = () => showScreen('diff-screen');
+document.getElementById('diff-back-btn').onclick = () => showScreen('home-screen');
+
+// Rules modal
+document.getElementById('rules-btn').onclick = () => document.getElementById('rules-overlay').classList.add('show');
+document.getElementById('rules-close-btn').onclick = () => document.getElementById('rules-overlay').classList.remove('show');
+document.getElementById('rules-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('rules-overlay')) document.getElementById('rules-overlay').classList.remove('show');
+});
+
+// Difficulty selection
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    aiLevel = btn.dataset.level;
+  });
+});
+document.getElementById('start-ai-btn').onclick = () => { mode = 'ai'; startGame(); };
+
+document.getElementById('game-back-btn').onclick = () => {
+  showScreen('home-screen'); closeWinOverlay();
+};
+document.getElementById('header-reset-btn').onclick = () => { closeWinOverlay(); initRound(); };
+document.getElementById('win-rematch-btn').onclick = () => { closeWinOverlay(); initRound(); };
+document.getElementById('win-menu-btn').onclick = () => { showScreen('home-screen'); closeWinOverlay(); };
+
+/* ═══════════════════════════════════════
+   GAME START
+═══════════════════════════════════════ */
+function startGame() {
+  showScreen('game');
+  scores = { X: 0, O: 0, T: 0 };
+  updateScores();
+
+  // Score bar SVG labels
+  const sx = document.getElementById('score-item-x');
+  const so = document.getElementById('score-item-o');
+  sx.innerHTML = `<span class="score-num x" id="score-x">0</span> ${markSVG('X', 18, 18)}`;
+  so.innerHTML = `${markSVG('O', 18, 18)} <span class="score-num o" id="score-o">0</span>`;
+  document.getElementById('sym-x').innerHTML = markSVG('X', 20, 20);
+  document.getElementById('sym-o').innerHTML = markSVG('O', 20, 20);
+  document.getElementById('label-x').textContent = 'Player X';
+  document.getElementById('label-o').textContent = mode === 'ai'
+    ? { easy: 'Easy AI', medium: 'Medium AI', hard: 'Hard AI' }[aiLevel]
+    : 'Player O';
+
+  buildGrid();
+  initRound();
+}
+
+function initRound() {
+  miniGrids = Array(9).fill(null).map(() => Array(9).fill(null));
+  bigWinners = Array(9).fill(null);
+  currentPlayer = 'X';
+  nextBig = null;
+  gameActive = true;
+
+  document.querySelectorAll('.big-box').forEach(b => {
+    b.className = 'big-box';
+    b.style.borderColor = '';
+    b.querySelector('.win-overlay').innerHTML = '';
+  });
+  document.querySelectorAll('.mini-box').forEach(c => {
+    c.className = 'mini-box';
+    c.innerHTML = '';
+  });
+
+  updateTurnUI();
+  highlightActive();
+}
+
+/* ═══════════════════════════════════════
+   CLICK HANDLER
+═══════════════════════════════════════ */
+function onCellClick(e) {
+  if (!gameActive) return;
+  if (mode === 'ai' && currentPlayer === 'O') return;
+
+  const bigIdx = parseInt(e.target.dataset.big);
+  const cellIdx = parseInt(e.target.dataset.idx);
+
+  if (!isValidMove(bigIdx, cellIdx)) return;
+
+  applyMove(bigIdx, cellIdx);
+  afterMove();
+}
+
+function isValidMove(bigIdx, cellIdx) {
+  if (bigWinners[bigIdx] !== null) return false;
+  if (nextBig !== null && nextBig !== bigIdx) return false;
+  if (miniGrids[bigIdx][cellIdx] !== null) return false;
+  return true;
+}
+
+/* ═══════════════════════════════════════
+   APPLY MOVE
+═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   SVG MARKS
+═══════════════════════════════════════ */
+function svgX(w, h) {
+  const p = 14;
+  const sw = 13;
+  return `<svg viewBox="0 0 100 100" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <line x1="${p}" y1="${p}" x2="${100-p}" y2="${100-p}" stroke="#f87060" stroke-width="${sw}" stroke-linecap="round"/>
+    <line x1="${100-p}" y1="${p}" x2="${p}" y2="${100-p}" stroke="#f87060" stroke-width="${sw}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function svgO(w, h) {
+  const sw = 12;
+  const r = 50 - sw / 2 - 4;
+  return `<svg viewBox="0 0 100 100" width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <circle cx="50" cy="50" r="${r}" stroke="#60c8f8" stroke-width="${sw}" fill="none"/>
+  </svg>`;
+}
+
+function markSVG(player, w, h) {
+  h = h || w;
+  return player === 'X' ? svgX(w, h) : svgO(w, h);
+}
+
+function getBoxPx() {
+  const box = document.querySelector('.big-box');
+  return box ? box.offsetWidth : 200;
+}
+
+function applyMove(bigIdx, cellIdx) {
+  miniGrids[bigIdx][cellIdx] = currentPlayer;
+
+  const cell = document.querySelector(`.mini-box[data-big="${bigIdx}"][data-idx="${cellIdx}"]`);
+  cell.innerHTML = markSVG(currentPlayer, '80%', '80%');
+  cell.classList.add('filled', currentPlayer.toLowerCase());
+
+  // Check mini win
+  const miniWinner = checkWin(miniGrids[bigIdx]);
+  if (miniWinner) {
+    bigWinners[bigIdx] = miniWinner;
+    const box = document.querySelector(`.big-box[data-big="${bigIdx}"]`);
+    box.classList.add(`won-${miniWinner}`);
+    box.querySelector('.win-overlay').innerHTML = markSVG(miniWinner, '100%', '100%');
+  } else if (miniGrids[bigIdx].every(v => v !== null)) {
+    bigWinners[bigIdx] = 'T';
+    const box = document.querySelector(`.big-box[data-big="${bigIdx}"]`);
+    box.classList.add('drawn');
+    box.querySelector('.win-overlay').textContent = '—';
+  }
+
+  // Set next big
+  nextBig = bigWinners[cellIdx] !== null ? null : cellIdx;
+}
+
+function afterMove() {
+  const mainWinner = checkWin(bigWinners.map(v => (v === 'T' ? null : v)));
+  if (mainWinner) {
+    gameActive = false;
+    scores[mainWinner]++;
+    updateScores();
+    setTimeout(() => showWin(mainWinner), 300);
+    return;
+  }
+
+  // Full draw check
+  if (bigWinners.every(v => v !== null)) {
+    gameActive = false;
+    scores.T++;
+    updateScores();
+    setTimeout(() => showWin('T'), 300);
+    return;
+  }
+
+  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  updateTurnUI();
+  highlightActive();
+
+  if (mode === 'ai' && currentPlayer === 'O' && gameActive) {
+    document.getElementById('ai-thinking').classList.add('show');
+    const delay = aiLevel === 'hard' ? 600 : aiLevel === 'medium' ? 400 : 300;
+    setTimeout(() => {
+      document.getElementById('ai-thinking').classList.remove('show');
+      doAiMove();
+    }, delay);
+  }
+}
+
+/* ═══════════════════════════════════════
+   AI
+═══════════════════════════════════════ */
+function doAiMove() {
+  if (!gameActive) return;
+  const moves = getLegalMoves(bigWinners, miniGrids, nextBig);
+  if (moves.length === 0) return;
+
+  let chosen;
+  if (aiLevel === 'easy') {
+    chosen = moves[Math.floor(Math.random() * moves.length)];
+  } else if (aiLevel === 'medium') {
+    // 60% smart, 40% random
+    chosen = Math.random() < 0.6 ? bestMove(moves, 2) : moves[Math.floor(Math.random() * moves.length)];
+  } else {
+    chosen = bestMove(moves, 4);
+  }
+
+  applyMove(chosen.big, chosen.cell);
+  afterMove();
+}
+
+function getLegalMoves(bw, mg, nb) {
+  const moves = [];
+  for (let b = 0; b < 9; b++) {
+    if (bw[b] !== null) continue;
+    if (nb !== null && nb !== b) continue;
+    for (let c = 0; c < 9; c++) {
+      if (mg[b][c] === null) moves.push({ big: b, cell: c });
+    }
+  }
+  return moves;
+}
+
+function bestMove(moves, depth) {
+  let best = null, bestScore = -Infinity;
+  for (const m of moves) {
+    const score = simulateMove(m.big, m.cell, 'O', depth - 1, -Infinity, Infinity);
+    if (score > bestScore) { bestScore = score; best = m; }
+  }
+  return best || moves[Math.floor(Math.random() * moves.length)];
+}
+
+function simulateMove(big, cell, player, depth, alpha, beta) {
+  // Clone state
+  const mg2 = miniGrids.map(a => [...a]);
+  const bw2 = [...bigWinners];
+
+  mg2[big][cell] = player;
+
+  const miniW = checkWin(mg2[big]);
+  if (miniW) bw2[big] = miniW;
+  else if (mg2[big].every(v => v !== null)) bw2[big] = 'T';
+
+  const mainW = checkWin(bw2.map(v => v === 'T' ? null : v));
+  if (mainW === 'O') return 100 + depth;
+  if (mainW === 'X') return -(100 + depth);
+  if (bw2.every(v => v !== null)) return 0;
+  if (depth === 0) return evalState(bw2, mg2);
+
+  const nextBig2 = bw2[cell] !== null ? null : cell;
+  const opp = player === 'O' ? 'X' : 'O';
+  const moves = getLegalMovesFrom(bw2, mg2, nextBig2);
+  if (moves.length === 0) return 0;
+
+  if (opp === 'O') {
+    let best = -Infinity;
+    for (const m of moves) {
+      best = Math.max(best, simulateMoveDeep(m.big, m.cell, opp, depth-1, alpha, beta, mg2, bw2));
+      alpha = Math.max(alpha, best);
+      if (beta <= alpha) break;
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (const m of moves) {
+      best = Math.min(best, simulateMoveDeep(m.big, m.cell, opp, depth-1, alpha, beta, mg2, bw2));
+      beta = Math.min(beta, best);
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+}
+
+function simulateMoveDeep(big, cell, player, depth, alpha, beta, mg_in, bw_in) {
+  const mg2 = mg_in.map(a => [...a]);
+  const bw2 = [...bw_in];
+  mg2[big][cell] = player;
+
+  const miniW = checkWin(mg2[big]);
+  if (miniW) bw2[big] = miniW;
+  else if (mg2[big].every(v => v !== null)) bw2[big] = 'T';
+
+  const mainW = checkWin(bw2.map(v => v === 'T' ? null : v));
+  if (mainW === 'O') return 100 + depth;
+  if (mainW === 'X') return -(100 + depth);
+  if (bw2.every(v => v !== null)) return 0;
+  if (depth === 0) return evalState(bw2, mg2);
+
+  const nextBig2 = bw2[cell] !== null ? null : cell;
+  const opp = player === 'O' ? 'X' : 'O';
+  const moves = getLegalMovesFrom(bw2, mg2, nextBig2);
+  if (moves.length === 0) return 0;
+
+  if (opp === 'O') {
+    let best = -Infinity;
+    for (const m of moves) {
+      best = Math.max(best, simulateMoveDeep(m.big, m.cell, opp, depth-1, alpha, beta, mg2, bw2));
+      alpha = Math.max(alpha, best);
+      if (beta <= alpha) break;
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (const m of moves) {
+      best = Math.min(best, simulateMoveDeep(m.big, m.cell, opp, depth-1, alpha, beta, mg2, bw2));
+      beta = Math.min(beta, best);
+      if (beta <= alpha) break;
+    }
+    return best;
+  }
+}
+
+function getLegalMovesFrom(bw, mg, nb) {
+  const moves = [];
+  for (let b = 0; b < 9; b++) {
+    if (bw[b] !== null) continue;
+    if (nb !== null && nb !== b) continue;
+    for (let c = 0; c < 9; c++) {
+      if (mg[b][c] === null) moves.push({ big: b, cell: c });
+    }
+  }
+  return moves;
+}
+
+// Heuristic: count lines O can win vs X can win
+function evalState(bw, mg) {
+  const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  let score = 0;
+  const mapped = bw.map(v => v === 'T' ? null : v);
+  for (const [a,b,c] of WINS) {
+    const line = [mapped[a], mapped[b], mapped[c]];
+    score += lineScore(line, 'O', 'X') * 3;
+  }
+  // Also score each mini grid
+  for (let b = 0; b < 9; b++) {
+    if (bw[b] !== null) continue;
+    for (const [a,b2,c] of WINS) {
+      const line = [mg[b][a], mg[b][b2], mg[b][c]];
+      score += lineScore(line, 'O', 'X');
+    }
+  }
+  return score;
+}
+
+function lineScore(line, me, opp) {
+  const mc = line.filter(v => v === me).length;
+  const oc = line.filter(v => v === opp).length;
+  if (oc > 0 && mc > 0) return 0;
+  if (mc === 2) return 3;
+  if (mc === 1) return 1;
+  if (oc === 2) return -3;
+  if (oc === 1) return -1;
+  return 0;
+}
+
+/* ═══════════════════════════════════════
+   WIN CHECK
+═══════════════════════════════════════ */
+function checkWin(board) {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for (const [a,b,c] of lines) {
+    if (board[a] && board[a] === board[b] && board[b] === board[c]) return board[a];
+  }
+  return null;
+}
+
+/* ═══════════════════════════════════════
+   UI UPDATES
+═══════════════════════════════════════ */
+function updateTurnUI() {
+  const bx = document.getElementById('badge-x');
+  const bo = document.getElementById('badge-o');
+  bx.className = 'player-badge' + (currentPlayer === 'X' ? ' active-x' : '');
+  bo.className = 'player-badge' + (currentPlayer === 'O' ? ' active-o' : '');
+}
+
+function highlightActive() {
+  document.querySelectorAll('.big-box').forEach(box => box.classList.remove('active'));
+  for (let b = 0; b < 9; b++) {
+    if (bigWinners[b] !== null) continue;
+    if (nextBig !== null && nextBig !== b) continue;
+    document.querySelector(`.big-box[data-big="${b}"]`).classList.add('active');
+  }
+}
+
+function updateScores() {
+  const sx = document.getElementById('score-x');
+  const so = document.getElementById('score-o');
+  const st = document.getElementById('score-tie');
+  if (sx) sx.textContent = scores.X;
+  if (so) so.textContent = scores.O;
+  if (st) st.textContent = scores.T;
+}
+
+function showWin(winner) {
+  const ov = document.getElementById('win-overlay');
+  const sym = document.getElementById('win-symbol');
+  const title = document.getElementById('win-title');
+  const sub = document.getElementById('win-sub');
+
+  if (winner === 'T') {
+    sym.innerHTML = '<span style="font-size:3.5rem;color:#6b6b80">—</span>';
+    sym.className = 'win-symbol';
+    title.textContent = 'Draw!';
+    sub.textContent = 'No winner this round';
+  } else {
+    sym.innerHTML = markSVG(winner, 80, 80);
+    sym.className = `win-symbol ${winner.toLowerCase()}`;
+    if (mode === 'ai') {
+      title.textContent = winner === 'X' ? 'Player X Wins!' : 'Computer Wins';
+      sub.textContent = winner === 'X' ? 'Well played!' : `${aiLevel.charAt(0).toUpperCase() + aiLevel.slice(1)} AI wins this round`;
+    } else {
+      title.textContent = `Player ${winner} Wins!`;
+      sub.textContent = 'Congratulations!';
+    }
+  }
+
+  highlightWinningBoxes(winner);
+  ov.classList.add('show');
+}
+
+function highlightWinningBoxes(winner) {
+  if (winner === 'T') return;
+  const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const mapped = bigWinners.map(v => v === 'T' ? null : v);
+  for (const [a,b,c] of WINS) {
+    if (mapped[a] === winner && mapped[b] === winner && mapped[c] === winner) {
+      [a,b,c].forEach(i => {
+        const box = document.querySelector(`.big-box[data-big="${i}"]`);
+        if (box) box.style.borderColor = winner === 'X' ? 'rgba(248,112,96,0.8)' : 'rgba(96,200,248,0.8)';
+      });
+    }
+  }
+}
+
+function closeWinOverlay() {
+  document.getElementById('win-overlay').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+showScreen('home-screen');
+document.getElementById('game-screen').style.display = 'none';
+buildGrid();
+</script>
 </body>
 </html>
