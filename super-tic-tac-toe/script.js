@@ -65,7 +65,7 @@ function handleMove(event) {
     target.textContent = currentPlayer;
 
 // Check if the player won the mini grid
-if (checkMiniWin(bigBoxIndex)) {
+if (checkMiniWin(bigBoxIndex, miniBoxRow, miniBoxCol)) {
     document.querySelector(`[data-big="${bigBoxIndex}"]`).classList.add('winner');
     bigBoxWinners[bigBoxIndex] = currentPlayer;
     // Check if the next big box is the won box
@@ -91,22 +91,15 @@ if (checkMiniWin(bigBoxIndex)) {
     updateCurrentPlayer();
 }
 
-function checkMiniWin(bigBoxIndex) {
+function checkMiniWin(bigBoxIndex, row, col) {
     const miniGrid = miniGrids[bigBoxIndex];
-    const lastMoveRow = [...miniGrid].findIndex(row => row.includes(currentPlayer));
-    const lastMoveCol = miniGrid[lastMoveRow].indexOf(currentPlayer);
-    if (checkWin(miniGrid, lastMoveRow, lastMoveCol)) {
+    if (checkWin(miniGrid, row, col)) {
         bigBoxWinners[bigBoxIndex] = currentPlayer;
-        console.log(`Mini win declared for big box ${bigBoxIndex} by player ${currentPlayer}`);
-        // Add the winner class to the big box
-        if (bigBoxWinners[bigBoxIndex] === 'X') {
-            document.querySelector(`[data-big="${bigBoxIndex}"]`).classList.add('winner', 'X');
-        } else if (bigBoxWinners[bigBoxIndex] === 'O') {
-            document.querySelector(`[data-big="${bigBoxIndex}"]`).classList.add('winner', 'O');
-        }
+        const box = document.querySelector(`[data-big="${bigBoxIndex}"]`);
+        box.classList.add('winner', currentPlayer);
+        return true;
     }
-    console.log(`bigBoxWinners: ${bigBoxWinners}`);
-    return checkWin(miniGrid, lastMoveRow, lastMoveCol);
+    return false;
 }
 
 function checkMainWin() {
